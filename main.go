@@ -39,7 +39,7 @@ func main() {
 	} else if updateFlag {
 		fmt.Println("This is a test")
 	} else {
-		fmt.Println("other usage")
+		flag.Usage()
 	}
 }
 
