@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	_ "database/sql"
 	"flag"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/modood/table"
 	"log"
@@ -25,19 +24,22 @@ func init() {
 }
 
 func main() {
-	var listFlag,addFlag,updateFlag bool
+	var listFlag,addFlag,updateFlag,reportFlag bool
 	flag.BoolVar(&listFlag, "l", false, "展示学生列表")
 	flag.BoolVar(&addFlag, "a", false, "添加新学生信息")
 	flag.BoolVar(&updateFlag, "u", false, "更新学生信息")
+	flag.BoolVar(&reportFlag, "r", false, "查看报表统计")
 	flag.Parse()
 
 	if listFlag {
 		studentList := studentList()
 		table.Output(studentList)
 	} else if addFlag {
-		fmt.Println("This is a init command")
+		studentAdd()
 	} else if updateFlag {
-		fmt.Println("This is a test")
+		studentUpdate()
+	} else if reportFlag {
+		studentReport()
 	} else {
 		flag.Usage()
 	}
@@ -61,4 +63,16 @@ func studentList() (userList []model.Student) {
 	}
 
 	return
+}
+
+func studentAdd() {
+	//todo 学生信息新增
+}
+
+func studentUpdate() {
+	//todo 学生信息编辑
+}
+
+func studentReport() {
+	//todo 报表信息
 }
