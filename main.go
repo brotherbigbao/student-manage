@@ -56,6 +56,7 @@ func studentList() (userList []model.Student) {
 		if err != nil {
 			panic(err)
 		}
+		userList = append(userList, student)
 	}
 
 	return
