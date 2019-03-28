@@ -25,18 +25,18 @@ func init() {
 }
 
 func main() {
-	var studentListFlag,isInit,isTest bool
-	flag.BoolVar(&studentListFlag, "l", false, "this help")
-	flag.BoolVar(&isInit, "i", false, "init database")
-	flag.BoolVar(&isTest, "t", false, "test sql")
+	var listFlag,addFlag,updateFlag bool
+	flag.BoolVar(&listFlag, "l", false, "展示学生列表")
+	flag.BoolVar(&addFlag, "a", false, "添加新学生信息")
+	flag.BoolVar(&updateFlag, "u", false, "更新学生信息")
 	flag.Parse()
 
-	if studentListFlag {
+	if listFlag {
 		studentList := studentList()
-		fmt.Println(studentList)
-	} else if isInit {
+		table.Output(studentList)
+	} else if addFlag {
 		fmt.Println("This is a init command")
-	} else if isTest {
+	} else if updateFlag {
 		fmt.Println("This is a test")
 	} else {
 		fmt.Println("other usage")
