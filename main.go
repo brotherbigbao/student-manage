@@ -7,6 +7,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
+	"student/model"
 )
 
 var Db *sql.DB
@@ -23,14 +24,15 @@ func init() {
 }
 
 func main() {
-	var isHelp,isInit,isTest bool
-	flag.BoolVar(&isHelp, "h", false, "this help")
+	var studentListFlag,isInit,isTest bool
+	flag.BoolVar(&studentListFlag, "l", false, "this help")
 	flag.BoolVar(&isInit, "i", false, "init database")
 	flag.BoolVar(&isTest, "t", false, "test sql")
 	flag.Parse()
 
-	if isHelp {
-		fmt.Println("This is a help message")
+	if studentListFlag {
+		studentList := studentList()
+		fmt.Println(studentList)
 	} else if isInit {
 		fmt.Println("This is a init command")
 	} else if isTest {
@@ -40,9 +42,21 @@ func main() {
 	}
 }
 
-func list() {
+func studentList() (userList []model.Student) {
 	rows, err := Db.Query("SELECT * FROM student ORDER BY id DESC")
 	if err != nil {
-
+		panic(err)
 	}
+
+	for rows.Next() {
+		student := model.Student{}
+		err = rows.Scan(&student.Id, &student.No, &student.Name, &student.CScore, &student.MathScore,
+			&student.EnglishScore, &student.TotalScore, &student.AverageScore, &student.Ranking,
+			&student.UpdatedTime, &student.CreatedTime)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return
 }
