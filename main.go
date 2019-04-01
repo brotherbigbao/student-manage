@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "database/sql"
 	"flag"
+	"gopkg.in/AlecAivazis/survey.v1"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/modood/table"
 	"log"
