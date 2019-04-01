@@ -155,11 +155,28 @@ func studentAdd() {
 }
 
 func updateRanking() {
+	rows, err := Db.Query("SELECT id FROM student ORDER BY total_score DESC")
+	if err != nil {
+		panic(err)
+	}
 
+	increment := 1
+
+	for rows.Next() {
+		var studentId uint32
+		err = rows.Scan(&studentId)
+		if err != nil {
+			panic(err)
+		}
+		Db.Exec("UPDATE student SET ranking=? WHERE id=?", increment, studentId)
+		increment++
+	}
+
+	return
 }
 
 func studentUpdate() {
-	//todo 学生信息编辑
+	updateRanking()
 }
 
 func studentReport() {
