@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "database/sql"
 	"flag"
+	"fmt"
 	"gopkg.in/AlecAivazis/survey.v1"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/modood/table"
@@ -91,6 +92,25 @@ func studentList() (userList []model.Student) {
 
 func studentAdd() {
 	//todo 学生信息新增
+	var qs = []*survey.Question{
+		{
+			Name: "name",
+			Prompt: &survey.Input{Message: "请输入姓名"},
+			Validate: survey.Required,
+		},
+	}
+
+	answers := struct {
+		Name string
+	}{}
+
+	err := survey.Ask(qs, &answers)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	fmt.Println(answers)
 }
 
 func studentUpdate() {
