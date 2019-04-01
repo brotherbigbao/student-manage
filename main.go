@@ -24,22 +24,45 @@ func init() {
 }
 
 func main() {
-	var listFlag,addFlag,updateFlag,reportFlag bool
+	var addFlag,addFromFileFlag,listFlag,listByNoFlag,listByNameFlag,updateFlag,deleteFlag,reportFlag,loginFlag,logoutFlag bool
+	flag.BoolVar(&addFlag, "a", false, "从键盘添加新学生信息")
+	flag.BoolVar(&addFromFileFlag, "af", false, "从文件添加新学生信息")
+
 	flag.BoolVar(&listFlag, "l", false, "展示学生列表")
-	flag.BoolVar(&addFlag, "a", false, "添加新学生信息")
-	flag.BoolVar(&updateFlag, "u", false, "更新学生信息")
+	flag.BoolVar(&listByNoFlag, "lno", false, "按学号查询")
+	flag.BoolVar(&listByNameFlag, "lname", false, "按姓名查询")
+
+	flag.BoolVar(&updateFlag, "u", false, "修改姓名")
+	flag.BoolVar(&deleteFlag, "d", false, "删除记录")
+
 	flag.BoolVar(&reportFlag, "r", false, "查看报表统计")
+
+	flag.BoolVar(&loginFlag, "login", false, "登录")
+	flag.BoolVar(&logoutFlag, "logout", false, "退出")
+
 	flag.Parse()
 
-	if listFlag {
+	if addFlag {
+		studentAdd()
+	} else if addFromFileFlag {
+		//todo
+	} else if listFlag {
 		studentList := studentList()
 		table.Output(studentList)
-	} else if addFlag {
-		studentAdd()
+	} else if listByNoFlag {
+		//todo
+	} else if listByNameFlag {
+		//todo
 	} else if updateFlag {
 		studentUpdate()
+	} else if deleteFlag {
+		//todo
 	} else if reportFlag {
 		studentReport()
+	} else if loginFlag {
+		//todo
+	} else if logoutFlag {
+		//todo
 	} else {
 		flag.Usage()
 	}
