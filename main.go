@@ -93,7 +93,6 @@ func studentList() (userList []model.Student) {
 }
 
 func studentAdd() {
-	//todo 学生信息新增
 	var qs = []*survey.Question{
 		{
 			Name: "no",
@@ -176,6 +175,63 @@ func updateRanking() {
 }
 
 func studentUpdate() {
+	var qs = []*survey.Question{
+		{
+			Name: "no",
+			Prompt: &survey.Input{Message: "请输入学号"},
+			Validate: survey.Required,
+		},
+		{
+			Name: "name",
+			Prompt: &survey.Input{Message: "请输入姓名"},
+			Validate: survey.Required,
+		},
+		{
+			Name: "c_score",
+			Prompt: &survey.Input{Message: "请输入C语言成绩"},
+			Validate: survey.Required,
+		},
+		{
+			Name: "math_score",
+			Prompt: &survey.Input{Message: "请输入数学成绩"},
+			Validate: survey.Required,
+		},
+		{
+			Name: "english_score",
+			Prompt: &survey.Input{Message: "请输入英语成绩"},
+			Validate: survey.Required,
+		},
+	}
+
+	answers := struct {
+		No uint32
+		Name string
+		CScore float32	`survey:"c_score"`
+		MathScore float32	`survey:"math_score""`
+		EnglishScore float32	`survey:"english_score"`
+	}{}
+
+	err := survey.Ask(qs, &answers)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	totalScore := answers.CScore + answers.MathScore + answers.EnglishScore
+	averageScore := totalScore/3
+	timeStr := time.Now().Format("2006-01-02 15:04:05")
+
+
+
+	updateSql := "UPDATE student SET name=?,c_score=?,math_score=?,english_score=?,total_score=?,average_score=?,ranking=?,updated_time=? WHERE no=?"
+	res, err := Db.Exec(updateSql, answers.Name, answers.CScore, answers.MathScore, answers.EnglishScore, totalScore, averageScore, 0, timeStr, answers.No)
+	if err != nil {
+		panic(err)
+	}
+
+	affectedNum, err := res.RowsAffected()
+	fmt.Println("成功更新" + strconv.Itoa(int(affectedNum)) + "条数据")
+
 	updateRanking()
 }
 
