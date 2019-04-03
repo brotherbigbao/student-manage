@@ -5,11 +5,12 @@ import (
 	_ "database/sql"
 	"flag"
 	"fmt"
-	"gopkg.in/AlecAivazis/survey.v1"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/modood/table"
+	"gopkg.in/AlecAivazis/survey.v1"
 	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"student/model"
@@ -53,6 +54,14 @@ func main() {
 
 	flag.Parse()
 
+	if !loginFlag && !logoutFlag {
+		if !checkLogin() {
+			fmt.Println("请先登录！")
+			flag.Usage()
+			return
+		}
+	}
+
 	if addFlag {
 		studentAdd()
 	} else if addFromFileFlag {
@@ -63,13 +72,13 @@ func main() {
 	} else if updateFlag {
 		studentUpdate()
 	} else if deleteFlag {
-		//todo
+		studentDelete(no)
 	} else if reportFlag {
 		studentReport()
 	} else if loginFlag {
-		//todo
+		login()
 	} else if logoutFlag {
-		//todo
+		logout()
 	} else {
 		flag.Usage()
 	}
@@ -213,6 +222,8 @@ func studentAddFromFile(filePath string) {
 		totalAffectedNum += int(affectedNum)
 	}
 	fmt.Println("成功创建" + strconv.Itoa(int(totalAffectedNum)) + "条数据")
+
+	updateRanking()
 }
 
 func updateRanking() {
@@ -297,6 +308,86 @@ func studentUpdate() {
 	updateRanking()
 }
 
+func studentDelete(no int)  {
+	if no == 0 {
+		fmt.Println("请输入正确的学号")
+		return
+	}
+
+	deleteSql := "DELETE FROM student WHERE no=?"
+	res, err := Db.Exec(deleteSql, no)
+	if err != nil {
+		panic(err)
+	}
+
+	affectedNum, err := res.RowsAffected()
+	fmt.Println("成功删除" + strconv.Itoa(int(affectedNum)) + "条数据")
+
+	updateRanking()
+}
+
 func studentReport() {
 	//todo 报表信息
+}
+
+func login() {
+	var qs = []*survey.Question{
+		{
+			Name: "name",
+			Prompt: &survey.Input{Message: "请输入姓名"},
+			Validate: survey.Required,
+		},
+		{
+			Name: "password",
+			Prompt: &survey.Input{Message: "请输入密码"},
+			Validate: survey.Required,
+		},
+	}
+
+	answers := struct {
+		Name string
+		Password string
+	}{}
+
+	err := survey.Ask(qs, &answers)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	name := answers.Name
+	password := answers.Password
+
+	if name == "admin" && password == "123456" {
+		err := ioutil.WriteFile("login.data", []byte("1"), 0644)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println("登录成功！")
+	} else {
+		fmt.Println("用户名或密码错误！")
+	}
+}
+
+func logout() {
+	err := os.Remove("login.data")
+	if err != nil {
+		fmt.Println("退出失败，请重试！")
+	}
+	fmt.Println("退出成功！")
+}
+
+func checkLogin() bool  {
+	ioutil.ReadFile("login.data")
+	b, err := ioutil.ReadFile("login.data")
+	if err != nil {
+		return false
+	}
+
+	if string(b[:]) == "1" {
+		return true
+	}
+
+	return false
 }
