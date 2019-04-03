@@ -8,8 +8,10 @@ import (
 	"gopkg.in/AlecAivazis/survey.v1"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/modood/table"
+	"io/ioutil"
 	"log"
 	"strconv"
+	"strings"
 	"student/model"
 	"time"
 )
@@ -28,13 +30,18 @@ func init() {
 }
 
 func main() {
-	var addFlag,addFromFileFlag,listFlag,listByNoFlag,listByNameFlag,updateFlag,deleteFlag,reportFlag,loginFlag,logoutFlag bool
+	var addFlag,addFromFileFlag,listFlag,updateFlag,deleteFlag,reportFlag,loginFlag,logoutFlag bool
+	var no int
+	var name,filePath string
+
 	flag.BoolVar(&addFlag, "a", false, "从键盘添加新学生信息")
+
 	flag.BoolVar(&addFromFileFlag, "af", false, "从文件添加新学生信息")
+	flag.StringVar(&filePath, "f", "", "文件路径")
 
 	flag.BoolVar(&listFlag, "l", false, "展示学生列表")
-	flag.BoolVar(&listByNoFlag, "lno", false, "按学号查询")
-	flag.BoolVar(&listByNameFlag, "lname", false, "按姓名查询")
+	flag.IntVar(&no, "no", 0, "按学号查询")
+	flag.StringVar(&name, "name", "", "按姓名查询")
 
 	flag.BoolVar(&updateFlag, "u", false, "修改姓名")
 	flag.BoolVar(&deleteFlag, "d", false, "删除记录")
@@ -49,14 +56,10 @@ func main() {
 	if addFlag {
 		studentAdd()
 	} else if addFromFileFlag {
-		//todo
+		studentAddFromFile(filePath)
 	} else if listFlag {
-		studentList := studentList()
+		studentList := studentList(no, name)
 		table.Output(studentList)
-	} else if listByNoFlag {
-		//todo
-	} else if listByNameFlag {
-		//todo
 	} else if updateFlag {
 		studentUpdate()
 	} else if deleteFlag {
@@ -72,8 +75,16 @@ func main() {
 	}
 }
 
-func studentList() (userList []model.Student) {
-	rows, err := Db.Query("SELECT * FROM student ORDER BY id DESC")
+func studentList(no int, name string) (userList []model.Student) {
+	sql := "SELECT * FROM student ORDER BY id DESC"
+	if no != 0 {
+		sql = "SELECT * FROM student WHERE `no`=" + strconv.Itoa(no) + " ORDER BY id DESC"
+	}
+	if len(name) != 0 {
+		sql = "SELECT * FROM student WHERE `name` LIKE '%" + name + "%' ORDER BY id DESC"
+	}
+
+	rows, err := Db.Query(sql)
 	if err != nil {
 		panic(err)
 	}
@@ -151,6 +162,57 @@ func studentAdd() {
 	fmt.Println("成功创建" + strconv.Itoa(int(affectedNum)) + "条数据")
 
 	updateRanking()
+}
+
+func studentAddFromFile(filePath string) {
+	if len(filePath) == 0 {
+		fmt.Println("文件地址不能为空")
+		return
+	}
+
+	b, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		panic(err)
+	}
+	dataStr := string(b[:])
+	dataRows := strings.Split(dataStr, "\n")
+	totalAffectedNum := 0
+	for _, v := range dataRows {
+		if len(v) < 1 {
+			continue
+		}
+		fields := strings.Split(v, ",")
+		if len(fields) != 5 {
+			fmt.Println(v)
+			fmt.Println("数据格式不正确")
+		}
+
+		cScore, err := strconv.Atoi(fields[2])
+		if err != nil {
+			panic(err)
+		}
+		mathScore, err := strconv.Atoi(fields[3])
+		if err != nil {
+			panic(err)
+		}
+		englishScore, err := strconv.Atoi(fields[4])
+		if err != nil {
+			panic(err)
+		}
+		totalScore := cScore + mathScore + englishScore
+		averageScore := totalScore/3
+		timeStr := time.Now().Format("2006-01-02 15:04:05")
+
+		insertSql := "INSERT INTO student(no,name,c_score,math_score,english_score,total_score,average_score,ranking,updated_time,created_time) VALUES(?,?,?,?,?,?,?,?,?,?)"
+		res, err := Db.Exec(insertSql, fields[0], fields[1], fields[2], fields[3], fields[4], totalScore, averageScore, 0, timeStr, timeStr)
+		if err != nil {
+			panic(err)
+		}
+
+		affectedNum, err := res.RowsAffected()
+		totalAffectedNum += int(affectedNum)
+	}
+	fmt.Println("成功创建" + strconv.Itoa(int(totalAffectedNum)) + "条数据")
 }
 
 func updateRanking() {
