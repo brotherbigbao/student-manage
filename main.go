@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	_ "database/sql"
 	"flag"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
