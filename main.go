@@ -326,7 +326,27 @@ func studentDelete(no int)  {
 }
 
 func studentReport() {
-	//todo 报表信息
+	type StatResult struct {
+		MaxCScore float32
+		MaxMathScore float32
+		MaxEnglishScore float32
+		FailStudentNum int
+	}
+
+	maxScoreSql := "SELECT MAX(c_score) AS max_c_score, MAX(math_score) AS max_math_score, MAX(english_score) AS max_english_score FROM student"
+	failStudents := "SELECT COUNT(*) AS num FROM student WHERE c_score < 60 OR math_score < 60 OR english_score < 60"
+
+	maxScoreRow := Db.QueryRow(maxScoreSql)
+	failStudentRow := Db.QueryRow(failStudents)
+
+	stat := StatResult{}
+	maxScoreRow.Scan(&stat.MaxCScore, &stat.MaxMathScore, &stat.MaxEnglishScore)
+	failStudentRow.Scan(&stat.FailStudentNum)
+
+	result := []StatResult{
+		stat,
+	}
+	table.Output(result)
 }
 
 func login() {
