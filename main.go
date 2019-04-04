@@ -36,15 +36,15 @@ func main() {
 
 	flag.BoolVar(&addFlag, "a", false, "从键盘添加新学生信息")
 
-	flag.BoolVar(&addFromFileFlag, "af", false, "从文件添加新学生信息")
-	flag.StringVar(&filePath, "f", "", "文件路径")
+	flag.BoolVar(&addFromFileFlag, "af", false, "从文件添加新学生信息 eg: ./student -af -f 文件路径")
+	flag.StringVar(&filePath, "f", "", "文件路径, 和-af一起使用")
 
-	flag.BoolVar(&listFlag, "l", false, "展示学生列表")
-	flag.IntVar(&no, "no", 0, "按学号查询")
-	flag.StringVar(&name, "name", "", "按姓名查询")
+	flag.BoolVar(&listFlag, "l", false, "展示学生列表 eg: ./student -l")
+	flag.IntVar(&no, "no", 0, "按学号查询 eg: ./student -l -no 1234")
+	flag.StringVar(&name, "name", "", "按姓名查询 eg: ./student -l -name 朱志庭")
 
-	flag.BoolVar(&updateFlag, "u", false, "修改姓名")
-	flag.BoolVar(&deleteFlag, "d", false, "删除记录")
+	flag.BoolVar(&updateFlag, "u", false, "修改学生信息（使用学号）eg: ./student -u -no 1234")
+	flag.BoolVar(&deleteFlag, "d", false, "删除学生信息（使用学号）eg: ./student -d -no 1234")
 
 	flag.BoolVar(&reportFlag, "r", false, "查看报表统计")
 
@@ -83,6 +83,7 @@ func main() {
 	}
 }
 
+//展示学生列表
 func studentList(no int, name string) (userList []model.Student) {
 	sql := "SELECT * FROM student ORDER BY id DESC"
 	if no != 0 {
@@ -111,6 +112,7 @@ func studentList(no int, name string) (userList []model.Student) {
 	return
 }
 
+//从命令行添加学生
 func studentAdd() {
 	var qs = []*survey.Question{
 		{
@@ -172,6 +174,7 @@ func studentAdd() {
 	updateRanking()
 }
 
+//从文件添加学生,一定要这样每个学生占一行,列用逗号分隔,依次是: "学号,姓名,c语言成绩,数学成绩,英语成绩", eg:83423,朱志庭,88,77,66
 func studentAddFromFile(filePath string) {
 	if len(filePath) == 0 {
 		fmt.Println("文件地址不能为空")
@@ -225,6 +228,7 @@ func studentAddFromFile(filePath string) {
 	updateRanking()
 }
 
+//更新学生排名 内部调用
 func updateRanking() {
 	rows, err := Db.Query("SELECT id FROM student ORDER BY total_score DESC")
 	if err != nil {
@@ -246,6 +250,7 @@ func updateRanking() {
 	return
 }
 
+//命令行手动更新学生信息
 func studentUpdate() {
 	var qs = []*survey.Question{
 		{
@@ -307,6 +312,7 @@ func studentUpdate() {
 	updateRanking()
 }
 
+//删除学生 输入学生学号删除
 func studentDelete(no int)  {
 	if no == 0 {
 		fmt.Println("请输入正确的学号")
@@ -325,6 +331,7 @@ func studentDelete(no int)  {
 	updateRanking()
 }
 
+//查看学生报表
 func studentReport() {
 	type StatResult struct {
 		MaxCScore float32
@@ -349,6 +356,7 @@ func studentReport() {
 	table.Output(result)
 }
 
+//登入 当前目录要有写权限
 func login() {
 	var qs = []*survey.Question{
 		{
@@ -389,6 +397,7 @@ func login() {
 	}
 }
 
+//退出 当前目前要有写权限
 func logout() {
 	err := os.Remove("login.data")
 	if err != nil {
@@ -397,6 +406,7 @@ func logout() {
 	fmt.Println("退出成功！")
 }
 
+//判断登录状态 内部调用
 func checkLogin() bool  {
 	ioutil.ReadFile("login.data")
 	b, err := ioutil.ReadFile("login.data")
